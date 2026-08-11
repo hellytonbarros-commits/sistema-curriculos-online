@@ -12,7 +12,7 @@ if (!fs.existsSync(DATA_FILE)) fs.writeFileSync(DATA_FILE, "[]", "utf8");
 
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(__dirname));
 
 function readOrders() {
   try { return JSON.parse(fs.readFileSync(DATA_FILE, "utf8") || "[]"); }
@@ -82,7 +82,7 @@ app.delete("/api/pedidos/:id", (req, res) => {
   res.json({ok:true});
 });
 
-app.get("/admin", (req,res) => res.sendFile(path.join(__dirname,"public","admin.html")));
-app.use((req,res) => res.sendFile(path.join(__dirname,"public","index.html")));
+app.get("/admin", (req,res) => res.sendFile(path.join(__dirname,"admin.html")));
+app.use((req,res) => res.sendFile(path.join(__dirname,"index.html")));
 
 app.listen(PORT, () => console.log(`Currículos online: http://localhost:${PORT}`));
