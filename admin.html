@@ -1,14 +1,387 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Painel administrativo</title>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Painel administrativo</title>
+
 <style>
-body{margin:0;background:#06100b;color:#fff;font-family:Arial,sans-serif}.wrap{max-width:1100px;margin:auto;padding:30px 16px}h1{font-size:36px}.top{display:flex;justify-content:space-between;align-items:center}.card{background:#0d1b14;border:1px solid #294638;border-radius:16px;padding:18px;margin:14px 0}.order{border:1px solid #315040;border-radius:12px;padding:16px;margin:12px 0}button,select{padding:9px 12px;border:0;border-radius:8px;font-weight:700;cursor:pointer}button{background:#aaff00}.danger{background:#ff6262}.wa{background:#52d273;margin-left:8px}.muted{color:#bbb}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-</style></head><body><main class="wrap"><div class="top"><div><h1>📋 Pedidos de currículos</h1><p>Promoção R$ 2,99 • (61) 98583-6414</p></div><button onclick="load()">Atualizar</button></div><div id="list" class="card">Carregando...</div></main>
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:#06100b;
+  color:#fff;
+  font-family:Arial,sans-serif;
+}
+
+.wrap{
+  max-width:1100px;
+  margin:auto;
+  padding:30px 16px;
+}
+
+h1{
+  font-size:36px;
+  margin:0 0 15px;
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:20px;
+}
+
+.sub{
+  font-size:17px;
+  margin-bottom:30px;
+}
+
+button{
+  border:0;
+  border-radius:9px;
+  padding:11px 18px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.refresh{
+  background:#9cff00;
+  color:#000;
+}
+
+.order{
+  border:1px solid #244b38;
+  background:#0b1c13;
+  border-radius:16px;
+  padding:18px;
+  margin-bottom:20px;
+}
+
+.order h2{
+  margin:0 0 18px;
+  font-size:25px;
+}
+
+.order p{
+  margin:7px 0;
+}
+
+.buttons{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:18px;
+}
+
+.details-btn{
+  background:#9cff00;
+  color:#000;
+}
+
+.whatsapp{
+  background:#49d273;
+  color:#000;
+}
+
+.delete{
+  background:#ff5c65;
+  color:#000;
+}
+
+.status{
+  padding:10px;
+  border-radius:8px;
+  background:#fff;
+  color:#000;
+}
+
+.details{
+  display:none;
+  margin-top:20px;
+  padding:20px;
+  border-radius:12px;
+  background:#07150e;
+  border:1px solid #315d46;
+}
+
+.details.open{
+  display:block;
+}
+
+.details h3{
+  color:#9cff00;
+  margin-top:0;
+}
+
+.info{
+  margin:12px 0;
+  padding-bottom:10px;
+  border-bottom:1px solid #1e3b2b;
+}
+
+.info strong{
+  color:#9cff00;
+}
+
+.info-text{
+  white-space:pre-wrap;
+  line-height:1.5;
+}
+
+@media(max-width:700px){
+  .top{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  h1{
+    font-size:28px;
+  }
+
+  .order h2{
+    font-size:21px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrap">
+
+  <div class="top">
+    <div>
+      <h1>📋 Pedidos de currículos</h1>
+      <div class="sub">Promoção R$ 2,99 • (61) 98583-6414</div>
+    </div>
+
+    <button class="refresh" onclick="load()">Atualizar</button>
+  </div>
+
+  <div id="list">Carregando pedidos...</div>
+
+</div>
+
 <script>
-const list=document.querySelector("#list");
-async function load(){try{const r=await fetch("/api/pedidos");const d=await r.json();if(!d.pedidos.length){list.innerHTML="Nenhum pedido ainda.";return}
-list.innerHTML=d.pedidos.map(p=>`<div class="order"><h2>#${p.id} — ${esc(p.nome)}</h2><p><b>WhatsApp:</b> ${esc(p.whatsapp)}<br><b>Cidade:</b> ${esc(p.cidade)}<br><b>Objetivo:</b> ${esc(p.objetivo)}<br><b>Escolaridade:</b> ${esc(p.escolaridade)}</p><p class="muted">${new Date(p.criadoEm).toLocaleString("pt-BR")}</p><div class="row"><select onchange="status(${p.id},this.value)">${["Novo","Em produção","Finalizado","Cancelado"].map(s=>`<option ${p.status===s?"selected":""}>${s}</option>`).join("")}</select><button class="wa" onclick="wa('${encodeURIComponent(p.whatsapp)}','${encodeURIComponent("Olá "+p.nome+", estou entrando em contato sobre seu currículo.")}')">WhatsApp</button><button class="danger" onclick="del(${p.id})">Excluir</button></div></div>`).join("")}catch(e){list.textContent="Erro ao carregar: "+e.message}}
-function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
-async function status(id,status){await fetch("/api/pedidos/"+id,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({status})});load()}
-async function del(id){if(confirm("Excluir este pedido?")){await fetch("/api/pedidos/"+id,{method:"DELETE"});load()}}
-function wa(n,m){let x=n.replace(/%28|%29|%20|-/g,""); if(!x.startsWith("55"))x="55"+x; location.href="https://wa.me/"+x+"?text="+m}
+
+const list = document.querySelector("#list");
+
+function esc(value){
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+function toggleDetails(id){
+  const box = document.getElementById("details-" + id);
+
+  if(box){
+    box.classList.toggle("open");
+  }
+}
+
+async function load(){
+
+  try{
+
+    const r = await fetch("/api/pedidos");
+    const d = await r.json();
+
+    if(!d.pedidos || !d.pedidos.length){
+      list.innerHTML = "<p>Nenhum pedido ainda.</p>";
+      return;
+    }
+
+    list.innerHTML = d.pedidos.map(p => {
+
+      const id = p.id;
+
+      return `
+        <div class="order">
+
+          <h2>#${esc(id)} — ${esc(p.nome)}</h2>
+
+          <p><b>WhatsApp:</b> ${esc(p.whatsapp)}</p>
+          <p><b>Cidade:</b> ${esc(p.cidade)}</p>
+          <p><b>Objetivo:</b> ${esc(p.objetivo)}</p>
+          <p><b>Escolaridade:</b> ${esc(p.escolaridade)}</p>
+
+          <p><b>Data do pedido:</b> ${esc(p.createdAt || p.data || "")}</p>
+
+          <div class="buttons">
+
+            <select class="status"
+              onchange="status(${id},this.value)">
+              <option value="Novo" ${p.status==="Novo"?"selected":""}>Novo</option>
+              <option value="Em andamento" ${p.status==="Em andamento"?"selected":""}>Em andamento</option>
+              <option value="Concluído" ${p.status==="Concluído"?"selected":""}>Concluído</option>
+            </select>
+
+            <button
+              class="details-btn"
+              onclick="toggleDetails(${id})">
+              🔽 Ver informações completas
+            </button>
+
+            <button
+              class="whatsapp"
+              onclick="wa('${esc(p.whatsapp)}')">
+              WhatsApp
+            </button>
+
+            <button
+              class="delete"
+              onclick="del(${id})">
+              Excluir
+            </button>
+
+          </div>
+
+          <div class="details" id="details-${id}">
+
+            <h3>📋 Informações completas do cliente</h3>
+
+            <div class="info">
+              <strong>👤 Nome:</strong><br>
+              ${esc(p.nome)}
+            </div>
+
+            <div class="info">
+              <strong>📱 WhatsApp:</strong><br>
+              ${esc(p.whatsapp)}
+            </div>
+
+            <div class="info">
+              <strong>📧 E-mail:</strong><br>
+              ${esc(p.email)}
+            </div>
+
+            <div class="info">
+              <strong>🎂 Data de nascimento:</strong><br>
+              ${esc(p.nascimento)}
+            </div>
+
+            <div class="info">
+              <strong>📍 Cidade:</strong><br>
+              ${esc(p.cidade)}
+            </div>
+
+            <div class="info">
+              <strong>💍 Estado civil:</strong><br>
+              ${esc(p.estadoCivil)}
+            </div>
+
+            <div class="info">
+              <strong>🎯 Objetivo profissional:</strong><br>
+              ${esc(p.objetivo)}
+            </div>
+
+            <div class="info">
+              <strong>👤 Perfil profissional:</strong><br>
+              ${esc(p.perfil)}
+            </div>
+
+            <div class="info">
+              <strong>🎓 Escolaridade:</strong><br>
+              ${esc(p.escolaridade)}
+            </div>
+
+            <div class="info">
+              <strong>💼 Experiências profissionais:</strong>
+
+              <div class="info-text">
+                ${esc(p.experiencias)}
+              </div>
+            </div>
+
+            <div class="info">
+              <strong>📚 Cursos:</strong>
+
+              <div class="info-text">
+                ${esc(p.cursos)}
+              </div>
+            </div>
+
+            <div class="info">
+              <strong>⭐ Habilidades:</strong>
+
+              <div class="info-text">
+                ${esc(p.habilidades)}
+              </div>
+            </div>
+
+            <div class="info">
+              <strong>📝 Outras informações:</strong>
+
+              <div class="info-text">
+                ${esc(p.outras)}
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      `;
+
+    }).join("");
+
+  }catch(e){
+
+    console.error(e);
+
+    list.innerHTML =
+      "<p>❌ Não foi possível carregar os pedidos.</p>";
+
+  }
+}
+
+async function status(id, statusValue){
+
+  await fetch("/api/pedidos/" + id,{
+    method:"PATCH",
+    headers:{
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify({
+      status:statusValue
+    })
+  });
+
+  load();
+}
+
+async function del(id){
+
+  if(!confirm("Excluir este pedido?")){
+    return;
+  }
+
+  await fetch("/api/pedidos/" + id,{
+    method:"DELETE"
+  });
+
+  load();
+}
+
+function wa(number){
+
+  const clean = String(number || "")
+    .replace(/\D/g,"");
+
+  window.open(
+    "https://wa.me/55" + clean,
+    "_blank"
+  );
+}
+
 load();
-</script></body></html>
+
+</script>
+
+</body>
+</html>
