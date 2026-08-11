@@ -1,0 +1,14 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Painel administrativo</title>
+<style>
+body{margin:0;background:#06100b;color:#fff;font-family:Arial,sans-serif}.wrap{max-width:1100px;margin:auto;padding:30px 16px}h1{font-size:36px}.top{display:flex;justify-content:space-between;align-items:center}.card{background:#0d1b14;border:1px solid #294638;border-radius:16px;padding:18px;margin:14px 0}.order{border:1px solid #315040;border-radius:12px;padding:16px;margin:12px 0}button,select{padding:9px 12px;border:0;border-radius:8px;font-weight:700;cursor:pointer}button{background:#aaff00}.danger{background:#ff6262}.wa{background:#52d273;margin-left:8px}.muted{color:#bbb}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+</style></head><body><main class="wrap"><div class="top"><div><h1>📋 Pedidos de currículos</h1><p>Promoção R$ 2,99 • (61) 98583-6414</p></div><button onclick="load()">Atualizar</button></div><div id="list" class="card">Carregando...</div></main>
+<script>
+const list=document.querySelector("#list");
+async function load(){try{const r=await fetch("/api/pedidos");const d=await r.json();if(!d.pedidos.length){list.innerHTML="Nenhum pedido ainda.";return}
+list.innerHTML=d.pedidos.map(p=>`<div class="order"><h2>#${p.id} — ${esc(p.nome)}</h2><p><b>WhatsApp:</b> ${esc(p.whatsapp)}<br><b>Cidade:</b> ${esc(p.cidade)}<br><b>Objetivo:</b> ${esc(p.objetivo)}<br><b>Escolaridade:</b> ${esc(p.escolaridade)}</p><p class="muted">${new Date(p.criadoEm).toLocaleString("pt-BR")}</p><div class="row"><select onchange="status(${p.id},this.value)">${["Novo","Em produção","Finalizado","Cancelado"].map(s=>`<option ${p.status===s?"selected":""}>${s}</option>`).join("")}</select><button class="wa" onclick="wa('${encodeURIComponent(p.whatsapp)}','${encodeURIComponent("Olá "+p.nome+", estou entrando em contato sobre seu currículo.")}')">WhatsApp</button><button class="danger" onclick="del(${p.id})">Excluir</button></div></div>`).join("")}catch(e){list.textContent="Erro ao carregar: "+e.message}}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+async function status(id,status){await fetch("/api/pedidos/"+id,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({status})});load()}
+async function del(id){if(confirm("Excluir este pedido?")){await fetch("/api/pedidos/"+id,{method:"DELETE"});load()}}
+function wa(n,m){let x=n.replace(/%28|%29|%20|-/g,""); if(!x.startsWith("55"))x="55"+x; location.href="https://wa.me/"+x+"?text="+m}
+load();
+</script></body></html>
