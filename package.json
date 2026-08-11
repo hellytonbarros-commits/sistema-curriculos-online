@@ -1,0 +1,11 @@
+{
+  "name": "curriculos-online-r299",
+  "version": "1.2.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}

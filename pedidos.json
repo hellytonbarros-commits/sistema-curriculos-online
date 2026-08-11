@@ -1,0 +1,48 @@
+[
+  {
+    "id": 1,
+    "criadoEm": "2026-08-11T17:52:34.531Z",
+    "status": "Novo",
+    "nome": "HELLYTON BARROS",
+    "whatsapp": "61985836414",
+    "email": "GVBGYCXRTDn.marketing.demo@outlook.com",
+    "nascimento": "23072007",
+    "cidade": "Fortaleza",
+    "estadoCivil": "Ceará",
+    "objetivo": "serviços gerais",
+    "perfil": "",
+    "escolaridade": "ensino medio completo",
+    "experiencias": [],
+    "cursos": [
+      {
+        "curso": "informatica",
+        "instituicao": ""
+      }
+    ],
+    "habilidades": "",
+    "outras": ""
+  },
+  {
+    "id": 2,
+    "criadoEm": "2026-08-11T17:52:57.300Z",
+    "status": "Novo",
+    "nome": "HELLYTON BARROS",
+    "whatsapp": "61985836414",
+    "email": "GVBGYCXRTDn.marketing.demo@outlook.com",
+    "nascimento": "23072007",
+    "cidade": "Fortaleza",
+    "estadoCivil": "Ceará",
+    "objetivo": "serviços gerais",
+    "perfil": "",
+    "escolaridade": "ensino medio completo",
+    "experiencias": [],
+    "cursos": [
+      {
+        "curso": "informatica",
+        "instituicao": ""
+      }
+    ],
+    "habilidades": "",
+    "outras": ""
+  }
+]

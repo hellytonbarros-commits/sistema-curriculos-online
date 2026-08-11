@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Currículo Profissional — R$ 2,99</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#06100b;color:#fff;font-family:Arial,sans-serif}
+.wrap{max-width:900px;margin:auto;padding:28px 16px}.badge{display:inline-block;background:#aaff00;color:#000;padding:10px 18px;border-radius:24px;font-weight:800}
+h1{text-align:center;font-size:clamp(34px,6vw,58px);margin:18px 0 4px}.price{text-align:center;color:#ffd21c;font-size:48px;font-weight:900}.intro{text-align:center;color:#ddd}
+.card{border:1px solid #294638;background:#0d1b14;border-radius:20px;padding:20px;margin:18px 0}h2{margin-top:0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:650px){.grid{grid-template-columns:1fr}}
+label{font-weight:700;font-size:14px;display:block}input,textarea,select{width:100%;padding:13px;margin-top:6px;border-radius:10px;border:1px solid #315040;background:#f2f6ff;color:#111;font-size:16px}textarea{min-height:100px;resize:vertical}
+button{border:0;border-radius:12px;padding:15px 20px;font-size:18px;font-weight:900;cursor:pointer;background:#aaff00;color:#000}.submit{width:100%;margin-top:4px}.msg{margin-top:14px;padding:14px;border-radius:10px;background:#173d22}.error{background:#5b1d1d}
+.small{font-size:13px;color:#bbb}.exp{border-top:1px solid #315040;padding-top:14px;margin-top:14px}
+</style>
+</head>
+<body><main class="wrap">
+<div style="text-align:center"><span class="badge">⚡ PROMOÇÃO RELÂMPAGO</span></div>
+<h1>CURRÍCULO PROFISSIONAL</h1><div class="price">R$ 2,99</div>
+<p class="intro">Preencha seus dados. Seu pedido será enviado diretamente para nosso sistema.</p>
+<form id="form">
+<section class="card"><h2>👤 Dados pessoais</h2><div class="grid">
+<div><label>Nome completo *</label><input name="nome" required></div>
+<div><label>WhatsApp *</label><input name="whatsapp" required placeholder="(61) 99999-9999"></div>
+<div><label>E-mail</label><input name="email" type="email"></div>
+<div><label>Data de nascimento</label><input name="nascimento" placeholder="dd/mm/aaaa"></div>
+<div><label>Cidade/Estado *</label><input name="cidade" required></div>
+<div><label>Estado civil</label><input name="estadoCivil"></div>
+</div></section>
+<section class="card"><h2>🎯 Objetivo profissional</h2>
+<label>Cargo ou área desejada *</label><input name="objetivo" required>
+<label>Perfil profissional</label><textarea name="perfil"></textarea></section>
+<section class="card"><h2>🎓 Formação</h2><label>Escolaridade *</label><input name="escolaridade" required placeholder="Ex.: Ensino médio completo"></section>
+<section class="card"><h2>💼 Experiência profissional</h2><div id="experiencias"></div><button type="button" id="addExp">+ Adicionar experiência</button></section>
+<section class="card"><h2>📚 Cursos</h2><div id="cursos"></div><button type="button" id="addCurso">+ Adicionar curso</button></section>
+<section class="card"><h2>⭐ Informações adicionais</h2><label>Habilidades</label><textarea name="habilidades"></textarea><label>Outras informações</label><textarea name="outras"></textarea></section>
+<section class="card"><button class="submit" id="submit" type="submit">🚀 ENVIAR MEU PEDIDO</button><div id="msg" class="msg" style="display:none"></div></section>
+</form></main>
+<script>
+const $=s=>document.querySelector(s);
+function addExp(){const d=document.createElement("div");d.className="exp";d.innerHTML='<div class="grid"><div><label>Empresa</label><input data-k="empresa"></div><div><label>Cargo</label><input data-k="cargo"></div><div><label>Período</label><input data-k="periodo"></div><div><label>Atividades</label><input data-k="atividades"></div></div>';$("#experiencias").appendChild(d)}
+function addCurso(){const d=document.createElement("div");d.className="exp";d.innerHTML='<div class="grid"><div><label>Curso</label><input data-k="curso"></div><div><label>Instituição</label><input data-k="instituicao"></div></div>';$("#cursos").appendChild(d)}
+addExp(); $("#addExp").onclick=addExp; $("#addCurso").onclick=addCurso;
+$("#form").onsubmit=async e=>{
+ e.preventDefault(); const btn=$("#submit"),msg=$("#msg"); btn.disabled=true; btn.textContent="⏳ Enviando..."; msg.style.display="block";msg.className="msg";msg.textContent="Conectando ao servidor...";
+ const fd=new FormData(e.target); const obj=Object.fromEntries(fd.entries());
+ obj.experiencias=[...document.querySelectorAll("#experiencias .exp")].map(x=>Object.fromEntries([...x.querySelectorAll("[data-k]")].map(i=>[i.dataset.k,i.value]))).filter(x=>Object.values(x).some(Boolean));
+ obj.cursos=[...document.querySelectorAll("#cursos .exp")].map(x=>Object.fromEntries([...x.querySelectorAll("[data-k]")].map(i=>[i.dataset.k,i.value]))).filter(x=>Object.values(x).some(Boolean));
+ try{
+  msg.textContent="Salvando seu pedido...";
+  const controller=new AbortController(); const timer=setTimeout(()=>controller.abort(),10000);
+  const r=await fetch("/api/pedidos",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(obj),signal:controller.signal}); clearTimeout(timer);
+  const data=await r.json(); if(!r.ok||!data.ok) throw new Error(data.error||"Não foi possível enviar.");
+  msg.textContent="✅ Pedido enviado com sucesso! Número do pedido: #"+data.id; e.target.reset();
+ }catch(err){msg.className="msg error";msg.textContent=err.name==="AbortError"?"❌ O servidor demorou para responder. Verifique se a janela do servidor está aberta.":"❌ "+err.message}
+ finally{btn.disabled=false;btn.textContent="🚀 ENVIAR MEU PEDIDO"}
+};
+</script></body></html>
